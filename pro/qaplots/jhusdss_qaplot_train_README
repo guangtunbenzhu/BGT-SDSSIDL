@@ -1,0 +1,16 @@
+Real Matches in the window
+
+How many detected in window:
+Pitts: n_elements(ijhu_all)+n_elements(ipitts_nomatch)
+JHU  : n_elements(jhu_mgii)+n_elements(jhu_nomatch_mgii)
+JHU   Fe II included: n_elements(jhu_all)+n_elements(jhu_nomatch)
+
+How many matches in window:
+Mg II only    : n_elements(jhu_mgii)
+Fe II included: n_elements(jhu_all)
+
+How many no matches inwindow:
+Pitts: n_elements(ipitts_nomatch)+(n_elements(jhu_all)-n_elements(jhu_mgii)) or
+       n_elements(pitts_nomatch)
+JHU  : n_elements(jhu_nomatch_mgii)
+JHU  include Fe II: n_elements(jhu_nomatch)

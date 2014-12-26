@@ -1,0 +1,199 @@
+pro jhusdss_qaplot_montecarlo_ew, nmfver
+
+path=jhusdss_get_path(/nmfqso)+'/MC_'+string(nmfver, format='(I3.3)')
+mfile = path+'/Absorbers/'+'JHU_Pitts_matched_'+string(nmfver, format='(I3.3)')+'.fits'
+nomfile = path+'/Absorbers/'+'Pitts_nomatched_'+string(nmfver, format='(I3.3)')+'.fits'
+jhu_nomfile = path+'/Absorbers/'+'JHU_nomatched_'+string(nmfver, format='(I3.3)')+'.fits'
+
+pitts1 = mrdfits(mfile, 1)
+jhu0 = mrdfits(mfile, 2)
+pitts_nomatch1 = mrdfits(nomfile, 1)
+jhu_nomatch0 = mrdfits(jhu_nomfile, 1)
+
+strtmp = {criterion_mgii:1b, criterion_mgii_feii:1b, criterion_feii:1b, snr_mgii_2796:100.}
+pitts1_crit = replicate(strtmp, n_elements(pitts1))
+pitts_nomatch1_crit = replicate(strtmp, n_elements(pitts_nomatch1))
+pitts0 = struct_addtags(pitts1, pitts1_crit)
+pitts_nomatch0 = struct_addtags(pitts_nomatch1, pitts_nomatch1_crit)
+
+;;##########
+;; trim
+;; This is not accurate -- Guangtun 04-15-2013
+;; Let's use ijhu_all instead
+inwindow_all = bytarr(n_elements(pitts0))
+pitts0.criterion_mgii = 1b
+pitts0.criterion_mgii_feii = 1b
+pitts0.criterion_feii = 1b
+pitts0.snr_mgii_2796 = jhu0.snr_mgii_2796
+ipitts_all = jhusdss_absorber_trim(pitts0)
+inwindow_all[ipitts_all] = 1b
+
+;; real matches
+ireal_matches = bytarr(n_elements(pitts0))
+ijhu_all = jhusdss_absorber_trim(jhu0)
+pitts_all = pitts0[ijhu_all]
+jhu_all = jhu0[ijhu_all]
+ireal_matches[ijhu_all] = 1b
+
+;; in window but not real matches
+;; Not accurate -- Guangtun 04-15-2013
+;; ipitts_all_nomatch = where(inwindow_all and ~ireal_matches)
+
+;; only Mg II
+;; pitts_all includes Fe II, pitts_mgii only Mg II
+;; Add comp=ipitts_all_nomatch -- Guangtun 04-15-2013
+ipitts_mgii = where(jhu_all.criterion_mgii eq 1b, comp=ipitts_all_nomatch)
+pitts_mgii = pitts_all[ipitts_mgii]
+jhu_mgii = jhu_all[ipitts_mgii]
+
+;; no match in window
+pitts_nomatch0.criterion_mgii = 1b
+pitts_nomatch0.criterion_mgii_feii = 1b
+pitts_nomatch0.criterion_feii = 1b
+pitts_nomatch0.snr_mgii_2796 = 0. ;; Low-z shouldn't be a reference, Guangtun 04-15-2013
+ipitts_nomatch = jhusdss_absorber_trim(pitts_nomatch0)
+;; Change to pitts_all[ipitts_all_nomatch] -- Guangtun 04-15-2013
+;; pitts_nomatch = [pitts_nomatch0[ipitts_nomatch], pitts0[ipitts_all_nomatch]]
+pitts_nomatch = [pitts_nomatch0[ipitts_nomatch], pitts_all[ipitts_all_nomatch]]
+
+;; no match in window
+ijhu_nomatch = jhusdss_absorber_trim(jhu_nomatch0)
+jhu_nomatch = jhu_nomatch0[ijhu_nomatch]
+
+;; only Mg II
+ijhu_nomatch_mgii = where(jhu_nomatch.criterion_mgii eq 1b)
+jhu_nomatch_mgii = jhu_nomatch[ijhu_nomatch_mgii]
+;;##########
+
+
+pitts = pitts_mgii
+jhu = jhu_mgii
+
+;; init
+thick=6
+charsize=1.3
+charthick=3
+
+qapath = path+'/QAplots'
+if (jhusdss_direxist(qapath) eq 0) then spawn, 'mkdir -p '+qapath
+psfile = qapath+'/'+'w2796_w2803_matched_'+string(nmfver, format='(I3.3)')+'.ps'
+k_print, filename=psfile, axis_char_scale=1.4, xsize=12, ysize=8
+; !p.multi = [0, 2, 1]
+; !y.margin = 0
+; !x.margin = 0
+
+  ict = 3
+  ;; w2796 vs. w2796
+  x = pitts.rew_mgii_2796
+  y = jhu.rew_mgii_2796
+  xra = [0., 5.99]
+  yra = [0., 5.99]
+  ytitle = textoidl('W^{\lambda2796}_{0, out} (\AA)')
+  xtitle = textoidl('W^{\lambda2796}_{0, in} (\AA)')
+  pos = [0.10, 0.35, 0.50, 0.90]
+  title = "Monte Carlo Results"
+
+; flevels = [0.7, 0.85, 0.95]
+  flevels = [0.60, 0.75, 0.90]
+  loadct, ict 
+  hogg_scatterplot, x, y, xra=xra, yra=yra, $
+       xnpix=50L, ynpix=50L, exponent=0.35, $
+       thick=thick, xthick=thick, ythick=thick, $
+       levels=flevels, ytitle=ytitle, xst=1, yst=1,$
+       charsize=charsize, charthick=charthick, xtickformat='(A1)', $
+       /outliers, outsymsize=0.1, outcolor=djs_icolor('gray'), $
+       position=pos, ytickformat='(i1.1)'
+  loadct, 0
+; djs_axis, xaxis=1, xtitle=xtitle, charsize=charsize, charthick=charthick, xtickformat='(i1.1)'
+  djs_oplot, !x.crange, !x.crange, thick=thick
+
+  x = pitts.rew_mgii_2796
+  y = jhu.rew_mgii_2796 - pitts.rew_mgii_2796
+  ymean = (moment(y, sdev=ysdev))[0]
+  xra = [0., 5.99]
+  yra = [-1.49, 1.49]
+; ytitle = textoidl('W(2796)_{JHU}-W(2796)_{Pitt}')
+  ytitle = textoidl('\Delta W^{\lambda2796}_0 (\AA)')
+  xtitle = textoidl('W^{\lambda2796}_{0, in} (\AA)')
+  pos = [0.10, 0.10, 0.50, 0.35]
+
+  legend = textoidl('<\Delta>='+string(ymean,format='(f6.3)')+' \AA')
+  djs_xyouts, !x.crange[0]+0.6*(!x.crange[1]-!x.crange[0]), $
+              !y.crange[0]+0.16*(!y.crange[1]-!y.crange[0]), $
+              legend, charsize=1.5, charthick=charthick
+  legend = textoidl('  \sigma_{\Delta}='+string(ysdev,format='(f4.2)')+' \AA')
+  djs_xyouts, !x.crange[0]+0.6*(!x.crange[1]-!x.crange[0]), $
+              !y.crange[0]+0.1*(!y.crange[1]-!y.crange[0]), $
+              legend, charsize=1.5, charthick=charthick
+  djs_xyouts, !x.crange[0]+0.70*(!x.crange[1]-!x.crange[0]), $
+              !y.crange[0]+1.02*(!y.crange[1]-!y.crange[0]), $
+              title, charsize=1.8, charthick=charthick
+
+  loadct, ict 
+  hogg_scatterplot, x, y, xra=xra, yra=yra, $
+       xnpix=50L, ynpix=50L, exponent=0.35, $
+       thick=thick, xthick=thick, ythick=thick, $
+       levels=flevels, ytitle=ytitle, xst=1, yst=1,$
+       charsize=charsize, charthick=charthick, xtitle=xtitle, $
+       /outliers, outsymsize=0.1, outcolor=djs_icolor('gray'), $
+       position=pos, /noerase, xtickformat='(i1.1)'
+  loadct, 0
+  djs_oplot, !x.crange, [0., 0.], thick=thick
+
+  print, ymean
+
+  ;; w2803 vs. w2803
+  x = pitts.rew_mgii_2803
+  y = jhu.rew_mgii_2803
+  xra = [0., 5.99]
+  yra = [0., 5.99]
+  ytitle = textoidl('W^{\lambda2803}_{0, out} (\AA)')
+  xtitle = textoidl('W^{\lambda2803}_{0, in} (\AA)')
+  pos = [0.50, 0.35, 0.90, 0.90]
+
+  loadct, ict
+  hogg_scatterplot, x, y, xra=xra, yra=yra, $
+       xnpix=50L, ynpix=50L, exponent=0.35, $
+       thick=thick, xthick=thick, ythick=thick, $
+       levels=flevels, ytickformat='(A1)', xst=1, yst=1,$
+       charsize=charsize, charthick=charthick, xtickformat='(A1)', $
+       /outliers, outsymsize=0.1, outcolor=djs_icolor('gray'), $
+       position=pos, /noerase
+  loadct, 0
+; djs_axis, xaxis=1, xtitle=xtitle, charsize=charsize, charthick=charthick, xtickformat='(i1.1)'
+  djs_axis, yaxis=1, ytitle=ytitle, charsize=charsize, charthick=charthick, ytickformat='(i1.1)'
+  djs_oplot, !x.crange, !x.crange, thick=thick
+
+  x = pitts.rew_mgii_2803
+  y = jhu.rew_mgii_2803 - pitts.rew_mgii_2803
+  ymean = (moment(y, sdev=ysdev))[0]
+  xra = [0., 5.99]
+  yra = [-1.49, 1.49]
+  ytitle = textoidl('\Delta W^{\lambda2803}_0 (\AA)')
+  xtitle = textoidl('W^{\lambda2803}_{0, in} (\AA)')
+  pos = [0.50, 0.10, 0.90, 0.35]
+
+  legend = textoidl('<\Delta>='+string(ymean,format='(f6.3)')+' \AA')
+  djs_xyouts, !x.crange[0]+0.6*(!x.crange[1]-!x.crange[0]), $
+              !y.crange[0]+0.16*(!y.crange[1]-!y.crange[0]), $
+              legend, charsize=1.5, charthick=charthick
+  legend = textoidl('  \sigma_{\Delta}='+string(ysdev,format='(f4.2)')+' \AA')
+  djs_xyouts, !x.crange[0]+0.6*(!x.crange[1]-!x.crange[0]), $
+              !y.crange[0]+0.1*(!y.crange[1]-!y.crange[0]), $
+              legend, charsize=1.5, charthick=charthick
+
+  loadct, ict
+  hogg_scatterplot, x, y, xra=xra, yra=yra, $
+       xnpix=50L, ynpix=50L, exponent=0.35, $
+       thick=thick, xthick=thick, ythick=thick, $
+       levels=flevels, ytickformat='(A1)', xst=1, yst=1,$
+       charsize=charsize, charthick=charthick, xtitle=xtitle, $
+       /outliers, outsymsize=0.1, outcolor=djs_icolor('gray'), $
+       position=pos, /noerase, xtickformat='(i1.1)'
+  loadct, 0
+  djs_axis, yaxis=1, ytitle=ytitle, charsize=charsize, charthick=charthick
+  djs_oplot, !x.crange, [0., 0.], thick=thick
+
+k_end_print
+
+end

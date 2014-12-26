@@ -1,0 +1,41 @@
+One catalog/index file: ra, dec, mjd, plate, fiber, z, zerr, snr, etc.
+One wavelength file: wavelength
+One flux file: flux, ivar
+One continuum file: continuum
+One normalized residual file: normalized residual
+One subtracted residual file: subtracted residual
+
+;; DR7-LRG
+
+DR7_LRG_ALL_INDEX.fits (the stats file)
+DR7_LRG_ALL_WAVE.fits
+DR7_LRG_ALL_FLUX.fits
+DR7_LRG_ALL_CONTINUUM.fits (version dependent)
+DR7_LRG_ALL_NORMALIZED_RESIDUAL.fits (version dependent)
+DR7_LRG_ALL_SUBTRACTED_RESIDUAL.fits (version dependent)
+
+;; DR9-LRG
+DR9_LRG_ALL_INDEX.fits (the stats file)
+DR9_LRG_ALL_WAVE.fits
+DR9_LRG_ALL_FLUX.fits
+DR9_LRG_ALL_CONTINUUM.fits (version dependent)
+DR9_LRG_ALL_NORMALIZED_RESIDUAL.fits (version dependent)
+DR9_LRG_ALL_SUBTRACTED_RESIDUAL.fits (version dependent)
+
+;; DR7-QSO
+
+DR7_QSO_ALL_INDEX.fits (the stats file)
+DR7_QSO_ALL_WAVE.fits
+DR7_QSO_ALL_FLUX.fits
+DR7_QSO_ALL_CONTINUUM.fits (version dependent)
+DR7_QSO_ALL_NORMALIZED_RESIDUAL.fits (version dependent)
+DR7_QSO_ALL_SUBTRACTED_RESIDUAL.fits (version dependent)
+
+;; DR9-QSO
+
+DR9_QSO_ALL_INDEX.fits (the stats file)
+DR9_QSO_ALL_WAVE.fits
+DR9_QSO_ALL_FLUX.fits
+DR9_QSO_ALL_CONTINUUM.fits (version dependent)
+DR9_QSO_ALL_NORMALIZED_RESIDUAL.fits (version dependent)
+DR9_QSO_ALL_SUBTRACTED_RESIDUAL.fits (version dependent)

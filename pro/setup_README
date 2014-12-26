@@ -1,0 +1,52 @@
+a) composite and nmf are independent: They run on raw (coadded)
+spectra and will create composite spectra and nmf basis vectors.
+b) decompose depends on nmf vectors: This also decomposes individual
+spectrum to nmf continuum/median continuum/residual.
+c) lines (still testing): This then work on the residual after
+decomposition and find absorbers.
+So to create absorbers one will have to run 1)nmf and 2)decompose first.
+We should think how more easily for you guys to run the whole thing there.
+Usually something_all.pro is the wrapper do the job.
+
+Data Directories:
+
+export RAW_DATA='/home/menard/Data/'
+export ALL_DATA='/home/gz323/Data/'
+
+$RAW_DATA/
+SDSS/
+		spectra/
+			e.g., spPlate-0266-51602.fits
+		Absorber/
+			MgII/
+MgII_Nestor_QSOinfo.fits
+		QSO/
+			dr7_bh_May09_2011.fits.gz
+(https://www.cfa.harvard.edu/~yshen/BH_mass/dr7.htm) 
+
+$ALL_DATA/
+SDSS/
+		QSO/
+			Composite/
+			NMF/
+				001/
+				101/
+				102/
+					QSO_NMF_basis_z000_100_norm4150.fits
+					QSO_NMF_basis_z040_179_norm3020.fits
+					QSO_NMF_basis_z080_280_norm2150.fits
+					QSO_NMF_basis_z200_479_norm1420.fits
+					Decompose/
+						e.g., QSO_spec_decomposed_1822_606.fits
+
+pulling everything down
+hg clone 
+
+commit changes
+hg commit -m 'comments'
+hg push
+
+pulling changes:
+hg pull 
+hg update 
+

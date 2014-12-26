@@ -1,0 +1,24 @@
+Normalization Wavelength Range: (see utils/jhusdss_normwave_minmax.pro)
+0.0<z<1.0: 4150-4250 AA
+0.4<z<1.8: 3020-3100 AA
+0.8<z<2.8: 2150-2250 AA
+2.0<z<4.8: 1420-1500 AA
+
+NMF basis path example:
+$ALL_DATA/SDSS/QSO/NMF/001/ 
+where 001 is version number
+
+NMF basis file name example: 
+QSO_NMF_basis_z000_100_norm4150.fits 
+where 000 is zmin(0.0)*100, 100 is zmax(1.0)*100
+and 4150 is the minimum normalization wavelength
+
+There are 4 sets of eigen vectors, each corresponding to one normalization scheme.
+
+When decompose the spectra, to use the smoothest eigen vectors,
+for (see decompose/jhusdss_decompose_bins.pro)
+0.1<z<0.6, we use set 1 (0.0<z<1.0, 4150-4250 AA)
+0.6<z<1.0, we use set 2 (0.4<z<1.8, 4150-4250 AA)
+1.0<z<2.5, we use set 3 (0.8<z<2.8, 4150-4250 AA)
+2.5<z<4.5, we use set 4 (2.0<z<4.8, 4150-4250 AA)
+

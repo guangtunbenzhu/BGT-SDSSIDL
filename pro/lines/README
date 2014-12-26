@@ -1,0 +1,55 @@
+_nmf_all: build nmf eigenspectra basis sets, eventually we want one single set across all redshift
+
+_decompose_all: decompose all spectra 
+
+_detect_absorbers_convolve_all: convolve all normalized spectra
+
+_decompose_stats_all: calcluate stats -- med_snr, med_sdev (_decompose_stats_train)
+
+
+
+_detect_absorbers_all (_train)
+09-15-2014; jhusdss_doublegaussian_fit failed while running dr12; temperary fix: if perror is not defined then set all the values to -999.
+_merge
+_qso2window
+_qso2abs 
+utils/jhusdss_abs2qso.pro
+
+04-14-2013: From now on train_set starts from after _qso2window to use the master catalogs, and detect_absorbers_train_*.pro before are obsolete
+after jhusdss_detect_absorbers_qso2window.pro 
+do jhusdss_detect_absorbers_window2pitts.pro
+   jhusdss_detect_absorbers_train_qso2abs.pro
+
+_train_match (qaplots/jhusdss_qaplot_train_*.pro does the trimming)
+qaplots/jhusdss_qaplot_train_excess does composite
+
+IF velocity dispersion is not a function of redshift, then this is completely fine
+_montecarlo_all
+_montecarlo_complete
+_montecarlo_dndzdw
+
+
+Catalog
+*) Mask out MW Calcium lines regions
+*) Beyond 8700 AA, require at least one iron line
+*) For completeness/dndz, 0.43<z<8700/2796-1
+*) dndz for MgII only and MgII+FeII 
+
+Pipeline to-do
+*) Mask out Calcium, then redo median filter...
+
+note isitconvolved is useless; use isitstated_blue/red
+
+
+###############
+04-19-2013; inserting fake absorbers into original spectra: MC_107. Very similar to training set using Pittsburgh catalog
+completeness/jhusdss_real_montecarlo_all
+decompose/jhusdss_decompose_montecarlo_all (noparal)
+lines/jhusdss_decompose_stats_montecarlo_all
+lines/jhusdss_detect_absorbers_convolve_montecarlo_all (noparal)
+lines/jhusdss_detect_absorbers_montecarlo_all (noparal)
+lines/jhusdss_detect_absorbers_montecarlo_qso2window
+lines/jhusdss_detect_absorbers_montecarlo_qso2abs
+lines/jhusdss_detect_absorbers_montecarlo_match
+qaplot/jhusdss_detect_absorbers_montecarlo_ew
+qaplot/jhusdss_detect_absorbers_montecarlo_stats
